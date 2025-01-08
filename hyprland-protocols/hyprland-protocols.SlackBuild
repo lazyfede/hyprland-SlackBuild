@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Hyprland SlackBuild script
-# Maintainer: Your Name <your.email@example.com>
-# Version: 0.1.0
-# Source: https://github.com/hyprland/hyprland
+# Hyprland-protocols SlackBuild script
+# Maintainer: lazyfede <lazyfede@gmail.com>
+# Version: 0.5.0
+# Source: https://github.com/hyprwm/hyprland-protocols
 
 PRGNAM=hyprland-protocols
 VERSION=0.5.0
