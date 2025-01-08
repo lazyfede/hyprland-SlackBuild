@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# hyprwayland-scanner SlackBuild script
+# Script by: lazyfede <lazyfede@gmail.com>
+# Version: 0.4.4
+# Source: https://github.com/hyprland/hyprwayland-scanner
+
+cd $(dirname $0) ; CWD=$(pwd)
+
+PRGNAM=hyprwayland-scanner
+VERSION=0.4.4
+ARCH=x86_64
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+SOURCE="https://github.com/hyprwm/hyprwayland-scanner/archive/refs/tags/v${VERSION}.tar.gz"
+SOURCE_DIR="${PRGNAM}-${VERSION}"
+PKGNAME="${PRGNAM}-${VERSION}-${BUILD}${TAG}"
+TMP=${TMP:-/tmp}
+PKGTYPE=${PKGTYPE:-tgz}
+PKG=$TMP/package-$PKGNAME
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+# Dependencies
+DEPENDS="cmake, wayland, wlroots"
+
+# Create the package directory
+mkdir -p $PKG
+
+# Check if source is already present
+if [ ! -f ${PRGNAM}-${VERSION}.tar.gz ]; then
+  # Ask for confirmation before downloading
+  read -p "Source not found. Download from ${SOURCE}? (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Download the source
+    wget -O ${PRGNAM}-${VERSION}.tar.gz $SOURCE
+    echo "Downloading ${SOURCE}..."
+  else
+    echo "Download cancelled. Exiting..."
+    exit 1
+  fi
+else
+  echo "Source already present, skipping download..."
+fi
+
+# Extract the source
+tar -xzf ${PRGNAM}-${VERSION}.tar.gz
+cd $SOURCE_DIR
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Build the package
+cmake -DCMAKE_INSTALL_PREFIX=/usr -B build
+cmake --build build -j `nproc`
+
+# Install the package
+cmake --build build --target install DESTDIR=$PKG
+cd ..
+rm -rf $SOURCE_DIR
+rm -f ${PRGNAM}-${VERSION}.tar.gz
+# Create the Slackware package
+cd $PKG
+mkdir -pv $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+/sbin/makepkg -l y -c n $TMP/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
+
+echo "Package created: ${PKGNAME}.txz"

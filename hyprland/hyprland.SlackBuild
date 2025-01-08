@@ -1,0 +1,113 @@
+#!/bin/bash
+
+# Hyprland SlackBuild script
+# Script by: lazyfede <lazyfede@gmail.com>
+# Version: 0.46.2
+# Source: https://github.com/hyprland/hyprland
+
+cd $(dirname $0) ; CWD=$(pwd)
+
+
+PRGNAM=Hyprland
+VERSION=0.46.2
+ARCH=x86_64
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+SOURCE="https://github.com/hyprwm/Hyprland/archive/refs/tags/v${VERSION}.tar.gz"
+UDIS86="https://github.com/canihavesomecoffee/udis86.git"
+TRACY="https://github.com/wolfpld/tracy.git"
+SOURCE_DIR="${PRGNAM}-${VERSION}"
+PKGNAME="${PRGNAM}-${VERSION}-${BUILD}${TAG}"
+TMP=${TMP:-/tmp}
+PKGTYPE=${PKGTYPE:-tgz}
+PKG=$TMP/package-$PKGNAME
+
+# Dependencies
+DEPENDS="cmake, wayland, wlroots, hyperwayland-scanner, aquamarine, hyprlang, hyprwayland-scanner, re2, hyprgraphics, hyprutils"
+
+# Create the package directory
+mkdir -p $PKG
+
+ Check if source is already present
+if [ ! -f ${PRGNAM}-${VERSION}.tar.gz ]; then
+  # Ask for confirmation before downloading
+  read -p "Source not found. Download from ${SOURCE}? (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Download the source
+    wget -O ${PRGNAM}-${VERSION}.tar.gz $SOURCE
+    echo "Downloading ${SOURCE}..."
+  else
+    echo "Download cancelled. Exiting..."
+    exit 1
+  fi
+else
+  echo "Source already present, skipping download..."
+fi
+
+
+# Extract the source
+tar -xzf ${PRGNAM}-${VERSION}.tar.gz
+
+#Download and patch
+if [ -z "$(ls -A ${PRGNAM}-${VERSION}/subprojects/udis86)" ]; then
+  # Ask for confirmation before downloading
+  read -p "udis86 not found. Download from ${UDIS86}? -recommended- (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Download the source
+    git clone ${UDIS86} ${PRGNAM}-${VERSION}/subprojects/udis86
+    echo "Downloading ${UDIS86}..."
+  else
+    echo "Download cancelled. Exiting..."
+    exit 1
+  fi
+else
+  echo "Source already present, skipping download..."
+fi
+
+if [ -z "$(ls -A ${PRGNAM}-${VERSION}/subprojects/tracy)" ]; then
+  # Ask for confirmation before downloading
+  read -p "tracy not found. Download from ${TRACY}? -recommended- (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Download the source
+    git clone ${TRACY} ${PRGNAM}-${VERSION}/subprojects/udis86
+    echo "Downloading ${TRACY}..."
+  else
+    echo "Download cancelled. Exiting..."
+    exit 1
+  fi
+else
+  echo "Source already present, skipping download..."
+fi
+
+
+
+
+cd $SOURCE_DIR
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Build the package
+#cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -D NO_SYSTEMD:STRING=true -B build -G Ninja
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -D NO_SYSTEMD:STRING=true -DCMAKE_INSTALL_PREFIX:PATH=/usr -S . -B ./build
+cmake --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
+DESTDIR=$PKG cmake --install build
+
+ninja -C build install DESTDIR=$PKG
+cd ..
+rm -rf $SOURCE_DIR
+rm -f ${PRGNAM}-${VERSION}.tar.gz
+
+# Create the Slackware package
+cd $PKG
+mkdir -pv $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+/sbin/makepkg -l y -c n $TMP/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
+
+echo "Package created: ${PKGNAME}.txz"
