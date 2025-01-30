@@ -2,14 +2,14 @@
 
 # Hyprland SlackBuild script
 # Script by: lazyfede <lazyfede@gmail.com>
-# Version: 0.46.2
+# Version: 0.47.0
 # Source: https://github.com/hyprland/hyprland
 
 cd $(dirname $0) ; CWD=$(pwd)
 
 
 PRGNAM=Hyprland
-VERSION=0.46.2
+VERSION=0.47.0
 ARCH=x86_64
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -28,7 +28,7 @@ DEPENDS="cmake, wayland, wlroots, hyperwayland-scanner, aquamarine, hyprlang, hy
 # Create the package directory
 mkdir -p $PKG
 
- Check if source is already present
+#Check if source is already present
 if [ ! -f ${PRGNAM}-${VERSION}.tar.gz ]; then
   # Ask for confirmation before downloading
   read -p "Source not found. Download from ${SOURCE}? (y/n) " -n 1 -r

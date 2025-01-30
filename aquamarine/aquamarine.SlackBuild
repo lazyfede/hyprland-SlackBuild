@@ -2,13 +2,13 @@
 
 # Aquamarine SlackBuild script
 # Script by: lazyfede <lazyfede@gmail.com>
-# Version: 0.5.1
+# Version: 0.7.2
 # Source: https://github.com/hyprwm/aquamarine
 
 cd $(dirname $0) ; CWD=$(pwd)
 
 PRGNAM=aquamarine
-VERSION=0.5.1
+VERSION=0.7.2
 ARCH=x86_64
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
