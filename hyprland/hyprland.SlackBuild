@@ -2,14 +2,14 @@
 
 # Hyprland SlackBuild script
 # Script by: lazyfede <lazyfede@gmail.com>
-# Version: 0.47.0
+# Version: 0.47.1
 # Source: https://github.com/hyprland/hyprland
 
 cd $(dirname $0) ; CWD=$(pwd)
 
 
 PRGNAM=Hyprland
-VERSION=0.47.0
+VERSION=0.47.1
 ARCH=x86_64
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
