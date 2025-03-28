@@ -2,14 +2,14 @@
 
 # Hyprland SlackBuild script
 # Script by: lazyfede <lazyfede@gmail.com>
-# Version: 0.47.1
+# Version: 0.48.0
 # Source: https://github.com/hyprland/hyprland
 
 cd $(dirname $0) ; CWD=$(pwd)
 
 
 PRGNAM=Hyprland
-VERSION=0.47.1
+VERSION=0.48.0
 ARCH=x86_64
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -72,7 +72,7 @@ if [ -z "$(ls -A ${PRGNAM}-${VERSION}/subprojects/tracy)" ]; then
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     # Download the source
-    git clone ${TRACY} ${PRGNAM}-${VERSION}/subprojects/udis86
+    git clone ${TRACY} ${PRGNAM}-${VERSION}/subprojects/tracy
     echo "Downloading ${TRACY}..."
   else
     echo "Download cancelled. Exiting..."
@@ -95,7 +95,7 @@ find -L . \
 
 # Build the package
 #cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -D NO_SYSTEMD:STRING=true -B build -G Ninja
-cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -D NO_SYSTEMD:STRING=true -DCMAKE_INSTALL_PREFIX:PATH=/usr -S . -B ./build
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -D NO_SYSTEMD:STRING=true -D NO_HYPRPM:STRING=true -D NO_UWSM:STRING=true -DCMAKE_INSTALL_PREFIX:PATH=/usr -S . -B ./build
 cmake --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
 DESTDIR=$PKG cmake --install build
 

@@ -2,11 +2,11 @@
 
 # Hyprland-protocols SlackBuild script
 # Maintainer: lazyfede <lazyfede@gmail.com>
-# Version: 0.6.1
+# Version: 0.6.2
 # Source: https://github.com/hyprwm/hyprland-protocols
 
 PRGNAM=hyprland-protocols
-VERSION=0.6.1
+VERSION=0.6.2
 ARCH=x86_64
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}

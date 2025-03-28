@@ -1,18 +1,18 @@
 #!/bin/bash
 
-# Aquamarine SlackBuild script
+# spng SlackBuild script
 # Script by: lazyfede <lazyfede@gmail.com>
-# Version: 0.8.0
-# Source: https://github.com/hyprwm/aquamarine
+# Version: 0.7.4
+# Source: https://github.com/randy408/libspng
 
 cd $(dirname $0) ; CWD=$(pwd)
 
-PRGNAM=aquamarine
-VERSION=0.8.0
+PRGNAM=libspng
+VERSION=0.7.4
 ARCH=x86_64
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
-SOURCE="https://github.com/hyprwm/aquamarine/archive/refs/tags/v${VERSION}.tar.gz"
+SOURCE="https://github.com/randy408/libspng/archive/refs/tags/v${VERSION}.tar.gz"
 SOURCE_DIR="${PRGNAM}-${VERSION}"
 PKGNAME="${PRGNAM}-${VERSION}-${BUILD}${TAG}"
 TMP=${TMP:-/tmp}
@@ -28,7 +28,7 @@ if [ -z "$ARCH" ]; then
 fi
 
 # Dependencies
-DEPENDS="cmake, wayland, wlroots, hyperwayland-scanner"
+DEPENDS="meson"
 
 # Create the package directory
 mkdir -p $PKG
@@ -61,20 +61,26 @@ find -L . \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 # Build the package
-cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr -S . -B ./build
-cmake --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
+meson setup \
+  build \
+  --prefix=/usr \
+  --buildtype=plain \
+  --auto-features=enabled \
+  --wrap-mode=nodownload \
+  -Db_lto=false \
+  -Db_pie=true
+
+meson install -C build --destdir $PKG
 
 # Install the package
-cmake --build build --target install DESTDIR=$PKG
 cd ..
 rm -rf $SOURCE_DIR
 rm -f ${PRGNAM}-${VERSION}.tar.gz
-
 # Create the Slackware package
 cd $PKG
 mkdir -pv $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
-/sbin/makepkg -l y -c n $TMP/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
 
+/sbin/makepkg -l y -c n $TMP/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
 
 echo "Package created: ${PKGNAME}.txz"
