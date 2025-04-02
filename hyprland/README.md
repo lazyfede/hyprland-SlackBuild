@@ -1,4 +1,4 @@
-hyprland - v0.46.2
+hyprland - v0.48.1
 
 DEPENDENCIES NEEDED: aquamarine, hyprcursor, hyprgraphics, hyprlang, hyprutils, hyprwayland-scanner, re2
 Bundled dependecies inside script: udis86, tracy

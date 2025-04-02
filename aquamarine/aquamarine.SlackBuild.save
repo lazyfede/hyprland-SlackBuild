@@ -30,6 +30,9 @@ fi
 # Dependencies
 DEPENDS="cmake, wayland, wlroots, hyperwayland-scanner"
 
+#Exit on errors
+set -e
+
 # Create the package directory
 mkdir -p $PKG
 
@@ -47,7 +50,7 @@ if [ ! -f ${PRGNAM}-${VERSION}.tar.gz ]; then
     exit 1
   fi
 else
-  echo "Source already present, skipping download..."
+  echo "Source already present: $SOURCE_FILE"
 fi
 
 # Extract the source
