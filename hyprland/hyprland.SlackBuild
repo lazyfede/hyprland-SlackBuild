@@ -2,14 +2,13 @@
 
 # Hyprland SlackBuild script
 # Script by: lazyfede <lazyfede@gmail.com>
-# Version: 0.48.1
+# Version: 0.49.0
 # Source: https://github.com/hyprland/hyprland
 
-cd $(dirname $0) ; CWD=$(pwd)
-
+CWD=$(pwd)
 
 PRGNAM=Hyprland
-VERSION=0.48.1
+VERSION=0.49.0
 ARCH=x86_64
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -97,17 +96,29 @@ find -L . \
 #cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -D NO_SYSTEMD:STRING=true -B build -G Ninja
 cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -D NO_SYSTEMD:STRING=true -D NO_HYPRPM:STRING=true -D NO_UWSM:STRING=true -DCMAKE_INSTALL_PREFIX:PATH=/usr -S . -B ./build
 cmake --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf _NPROCESSORS_CONF`
-DESTDIR=$PKG cmake --install build
+
 
 ninja -C build install DESTDIR=$PKG
+
+# Cleanup
 cd ..
-rm -rf $SOURCE_DIR
-rm -f ${PRGNAM}-${VERSION}.tar.gz
+rm -rf "$SOURCE_DIR"
+rm -f "${PRGNAM}-${VERSION}.tar.gz"
 
 # Create the Slackware package
-cd $PKG
-mkdir -pv $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
-/sbin/makepkg -l y -c n $TMP/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
+mkdir -pv "$PKG/install"
 
-echo "Package created: ${PKGNAME}.txz"
+# Check if slack-desc exists
+if [ ! -f "$CWD/slack-desc" ]; then
+  echo "Error: slack-desc file not found in $CWD"
+  exit 1
+fi
+
+# Copy slack-desc to package directory
+cp "$CWD/slack-desc" "$PKG/install/slack-desc"
+
+# Create the package
+cd "$PKG"
+/sbin/makepkg -l y -c n "$TMP/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE"
+
+echo "Package created: ${PKGNAME}.${PKGTYPE}"

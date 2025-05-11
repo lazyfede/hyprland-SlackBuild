@@ -2,14 +2,15 @@
 
 # hyprgraphics SlackBuild script
 # Script by: lazyfede <lazyfede@gmail.com>
-# Version: 0.1.2
+# Version: 0.1.3
 # Source: https://github.com/hyprwm/hyprgraphics
 
-cd $(dirname $0) ; CWD=$(pwd)
+set -e  # Exit immediately if a command exits with a non-zero status
 
+# Variables
 PRGNAM=hyprgraphics
-VERSION=0.1.2
-ARCH=x86_64
+VERSION=0.1.3
+ARCH=${ARCH:-x86_64}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 SOURCE="https://github.com/hyprwm/hyprgraphics/archive/refs/tags/v${VERSION}.tar.gz"
@@ -17,13 +18,18 @@ SOURCE_DIR="${PRGNAM}-${VERSION}"
 PKGNAME="${PRGNAM}-${VERSION}-${BUILD}${TAG}"
 TMP=${TMP:-/tmp}
 PKGTYPE=${PKGTYPE:-tgz}
-PKG=$TMP/package-$PKGNAME
+PKG="$TMP/package-$PKGNAME"
 
+# Change to the script's directory
+cd "$(dirname "$0")"
+CWD=$(pwd)
+
+# Detect architecture if not set
 if [ -z "$ARCH" ]; then
-  case "$( uname -m )" in
+  case "$(uname -m)" in
     i?86) ARCH=i586 ;;
     arm*) ARCH=arm ;;
-       *) ARCH=$( uname -m ) ;;
+    *) ARCH=$(uname -m) ;;
   esac
 fi
 
@@ -31,16 +37,16 @@ fi
 DEPENDS="cmake, wayland, wlroots, cairo, hyprutils, libjxl"
 
 # Create the package directory
-mkdir -p $PKG
+mkdir -p "$PKG"
 
 # Check if source is already present
-if [ ! -f ${PRGNAM}-${VERSION}.tar.gz ]; then
+if [ ! -f "${PRGNAM}-${VERSION}.tar.gz" ]; then
   # Ask for confirmation before downloading
   read -p "Source not found. Download from ${SOURCE}? (y/n) " -n 1 -r
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     # Download the source
-    wget -O ${PRGNAM}-${VERSION}.tar.gz $SOURCE
+    wget -O "${PRGNAM}-${VERSION}.tar.gz" "$SOURCE"
     echo "Downloading ${SOURCE}..."
   else
     echo "Download cancelled. Exiting..."
@@ -51,29 +57,40 @@ else
 fi
 
 # Extract the source
-tar -xzf ${PRGNAM}-${VERSION}.tar.gz
-cd $SOURCE_DIR
+tar -xzf "${PRGNAM}-${VERSION}.tar.gz"
+cd "$SOURCE_DIR"
+
+# Set file permissions
 chown -R root:root .
-find -L . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-  -o -perm 511 \) -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
-  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+find . -type f -exec chmod 644 {} \;
+find . -type d -exec chmod 755 {} \;
 
 # Build the package
-cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr -S . -B ./build
-cmake --build ./build --config Release --target all -j`nproc 2>/dev/null || getconf NPROCESSORS_CONF`
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -S . -B ./build
+cmake --build ./build --config Release --target all -j"$(nproc 2>/dev/null || getconf _NPROCESSORS_CONF)"
 
 # Install the package
-cmake --build build --target install DESTDIR=$PKG
+cmake --build build --target install DESTDIR="$PKG"
+
+# Cleanup
 cd ..
-rm -rf $SOURCE_DIR
-rm -f ${PRGNAM}-${VERSION}.tar.gz
+rm -rf "$SOURCE_DIR"
+rm -f "${PRGNAM}-${VERSION}.tar.gz"
 
 # Create the Slackware package
-cd $PKG
-mkdir -pv $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
-/sbin/makepkg -l y -c n $TMP/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
+mkdir -pv "$PKG/install"
 
-echo "Package created: ${PKGNAME}.txz"
+# Check if slack-desc exists
+if [ ! -f "$CWD/slack-desc" ]; then
+  echo "Error: slack-desc file not found in $CWD"
+  exit 1
+fi
+
+# Copy slack-desc to package directory
+cp "$CWD/slack-desc" "$PKG/install/slack-desc"
+
+# Create the package
+cd "$PKG"
+/sbin/makepkg -l y -c n "$TMP/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE"
+
+echo "Package created: ${PKGNAME}.${PKGTYPE}"
